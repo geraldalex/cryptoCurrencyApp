@@ -1,21 +1,80 @@
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { CryptoDetail, Transaction } from "./src/screens/index";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer } from '@react-navigation/native';
 
-export default function App() {
+import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
+
+import Tabs from "./src/navigation/tabs";
+
+const Stack = createNativeStackNavigator();
+
+const App = () => {
+  
+
+  const [appIsReady, setAppIsReady] = React.useState(false);
+
+  React.useEffect(() => {
+    async function prepare() {
+      try {
+       
+        await SplashScreen.preventAutoHideAsync();
+        
+        await Font.loadAsync({"Roboto-Bold": require('./src/assets/fonts/Roboto-Bold.ttf'),
+        "Roboto-Black": require('./src/assets/fonts/Roboto-Black.ttf'),
+        "Roboto-Regular": require('./src/assets/fonts/Roboto-Regular.ttf'),});
+       
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Tell the application to render
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  const onLayoutRootView = React.useCallback(async () => {
+    if (appIsReady) {
+      // This tells the splash screen to hide immediately! If we call this after
+      // `setAppIsReady`, then we may see a blank screen while the app is
+      // loading its initial state and rendering its first pixels. So instead,
+      // we hide the splash screen once we know the root view has already
+      // performed layout.
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
+  }
+  onLayoutRootView()
+ 
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    <NavigationContainer >
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false
+        }}
+        initialRouteName={'Home'}
+      >
+        <Stack.Screen
+          name="Home"
+          component={Tabs}
+        />
+        <Stack.Screen
+          name="CryptoDetail"
+          component={CryptoDetail}
+        />
+        <Stack.Screen
+          name="Transaction"
+          component={Transaction}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
